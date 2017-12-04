@@ -1,33 +1,24 @@
 from fman import DirectoryPaneCommand, show_alert, show_prompt
-import os
-import shutil
-from fman.url import as_human_readable
-from fman.url import as_url
-
+from fman.fs import is_dir, makedirs, move
+from fman.url import join, basename
 
 class MoveToDir(DirectoryPaneCommand):
     def __call__(self):
-        selected_files = self.pane.get_selected_files()
-        output = ""
-        if len(selected_files) >= 1 or (len(selected_files) == 0 and self.get_chosen_files()):
-            if len(selected_files) == 0 and self.get_chosen_files():
-                selected_files.append(self.get_chosen_files()[0])
-            dirPath = os.path.dirname(as_human_readable(selected_files[0])) + os.sep
-            ndnam,okay = show_prompt("Directory Name?")
-            if okay:
+        # get_chosen_files() returns the files selected by the user
+        # (="red" files). If no files are selected, the file under the cursor
+        # is returned:
+        chosen_files = self.get_chosen_files()
+        if chosen_files: # equivalent to `len(chosen_files) > 0`
+            ndnam, okay = show_prompt("Directory Name?")
+            if ndnam and okay: # Check ndnam as well because it could be empty
                 numf = 0
-                newdirp = dirPath + ndnam + os.sep
-                if not os.path.isdir(newdirp):
-                    os.mkdir(newdirp)
-                for filep in selected_files:
-                    head, tail = os.path.split(as_human_readable(filep))
-                    filename = tail or os.path.basename(head)
-                    shutil.move(dirPath + filename,newdirp + filename)
+                newdirp = join(self.pane.get_path(), ndnam)
+                if not is_dir(newdirp):
+                    # Create directory and its parent directories:
+                    makedirs(newdirp)
+                for filep in chosen_files:
+                    move(filep, join(newdirp, basename(filep)))
                     numf += 1
-                output += str(numf) + " items were moved!"
-            else:
-                output = "User Canceled!"
+                show_alert('%d items were moved!' % numf)
         else:
-            output += "No files or directories selected"
-
-        show_alert(output)
+            show_alert("No files or directories selected")
