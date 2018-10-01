@@ -2,7 +2,7 @@
 
 Plugin for [fman.io](https://fman.io) to move a selection of files to a directory. If the directory doesn't exist, create it and move the files.
 
-Install by uploading "MoveToDir" to your [data directory](https://fman.io/docs/customizing-fman)`/Plugins`.
+Install with [fman's built-in command for installing plugins](https://fman.io/docs/installing-plugins).
 
 ### Usage
 
